@@ -1,7 +1,5 @@
 package ro.pub.cs.systems.pdsd.lab03.phonedialer;
 
-import java.util.ArrayList;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
@@ -15,9 +13,36 @@ import android.widget.ImageButton;
 
 public class PhoneDialerActivity extends Activity {
 
-	private ButtonClickListener buttonClickListener = new ButtonClickListener();
+	private final int[] buttons = {
+			R.id.digit_0,
+			R.id.digit_1,
+			R.id.digit_2,
+			R.id.digit_3,
+			R.id.digit_4,
+			R.id.digit_5,
+			R.id.digit_6,
+			R.id.digit_7,
+			R.id.digit_8,
+			R.id.digit_9,
+			R.id.diez,
+			R.id.star
+	};
 	
-	private class ButtonClickListener implements View.OnClickListener{
+	private DigitButtonClickListener digitButtonClickListener = new DigitButtonClickListener();
+	private CallButtonClickListener callButtonClickListener = new CallButtonClickListener();
+	private HangUpButtonClickListener handUpButtonClickListener = new HangUpButtonClickListener();
+	private BackspaceButtonClickListener backspaceButtonClickListener = new BackspaceButtonClickListener();
+	
+	
+	private class HangUpButtonClickListener implements View.OnClickListener{
+
+		@Override
+		public void onClick(View v) {
+			finish();
+		}
+	}
+	
+	private class CallButtonClickListener implements View.OnClickListener{
 
 		@Override
 		public void onClick(View v) {
@@ -25,27 +50,38 @@ public class PhoneDialerActivity extends Activity {
 			EditText phoneNumberEditText = (EditText)findViewById(R.id.edit_text_phone_number);
 			String phoneNumber = phoneNumberEditText.getText().toString();
 			
-			if(v instanceof Button){
-				phoneNumberEditText.setText(phoneNumber + ((Button)v).getText().toString());
-			}
+			Intent intent = new Intent(Intent.ACTION_CALL);
+			intent.setData(Uri.parse("tel:" + phoneNumber));
+			startActivity(intent);
+		}
+	}
+	
+	private class BackspaceButtonClickListener implements View.OnClickListener{
+
+		@Override
+		public void onClick(View v) {
 			
-			if(v instanceof ImageButton){
-				switch (((ImageButton)v).getId()){
-					case R.id.backspace:
-						if(phoneNumber.length() > 0){
-							phoneNumberEditText.setText(phoneNumber.substring(0, phoneNumber.length() - 1));
-						}
-						break;
-					case R.id.call:
-						Intent intent = new Intent(Intent.ACTION_CALL);
-						intent.setData(Uri.parse("tel:" + phoneNumber));
-						startActivity(intent);
-						break;
-					case R.id.hangup:
-						finish();
-						break;
-				}
+			EditText phoneNumberEditText = (EditText)findViewById(R.id.edit_text_phone_number);
+			String phoneNumber = phoneNumberEditText.getText().toString();
+	
+			if(phoneNumber.length() > 0){
+				phoneNumberEditText.setText(phoneNumber.substring(0, phoneNumber.length() - 1));
 			}
+		}
+	}
+	
+	private class DigitButtonClickListener implements View.OnClickListener{
+
+		@Override
+		public void onClick(View v) {
+			
+			EditText phoneNumberEditText = (EditText)findViewById(R.id.edit_text_phone_number);
+			String phoneNumber = phoneNumberEditText.getText().toString();
+			
+			StringBuilder sb = new StringBuilder(phoneNumber);
+			sb.append(((Button)v).getText().toString());
+			
+			phoneNumberEditText.setText(sb.toString());
 		}
 	}
 	
@@ -53,67 +89,20 @@ public class PhoneDialerActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_phone_dialer);
-		ArrayList<? super View> phoneButtons = new ArrayList<View>();
 		
-		Button textButton = (Button)findViewById(R.id.digit_0);
-		textButton.setOnClickListener(buttonClickListener);
-		phoneButtons.add(textButton);
+		for(int i = 0; i < this.buttons.length; ++i){
+			Button button = (Button)findViewById(this.buttons[i]);
+			button.setOnClickListener(digitButtonClickListener);
+		}
 		
-		textButton = (Button)findViewById(R.id.digit_1);
-		textButton.setOnClickListener(buttonClickListener);
-		phoneButtons.add(textButton);
+		ImageButton callButton = (ImageButton)findViewById(R.id.call);
+		callButton.setOnClickListener(callButtonClickListener);
 		
-		textButton = (Button)findViewById(R.id.digit_2);
-		textButton.setOnClickListener(buttonClickListener);
-		phoneButtons.add(textButton);
+		ImageButton backspaceButton = (ImageButton)findViewById(R.id.backspace);
+		backspaceButton.setOnClickListener(backspaceButtonClickListener);
 		
-		textButton = (Button)findViewById(R.id.digit_3);
-		textButton.setOnClickListener(buttonClickListener);
-		phoneButtons.add(textButton);
-		
-		textButton = (Button)findViewById(R.id.digit_4);
-		textButton.setOnClickListener(buttonClickListener);
-		phoneButtons.add(textButton);
-		
-		textButton = (Button)findViewById(R.id.digit_5);
-		textButton.setOnClickListener(buttonClickListener);
-		phoneButtons.add(textButton);
-		
-		textButton = (Button)findViewById(R.id.digit_6);
-		textButton.setOnClickListener(buttonClickListener);
-		phoneButtons.add(textButton);
-		
-		textButton = (Button)findViewById(R.id.digit_7);
-		textButton.setOnClickListener(buttonClickListener);
-		phoneButtons.add(textButton);
-		
-		textButton = (Button)findViewById(R.id.digit_8);
-		textButton.setOnClickListener(buttonClickListener);
-		phoneButtons.add(textButton);
-		
-		textButton = (Button)findViewById(R.id.digit_9);
-		textButton.setOnClickListener(buttonClickListener);
-		phoneButtons.add(textButton);
-		
-		textButton = (Button)findViewById(R.id.star);
-		textButton.setOnClickListener(buttonClickListener);
-		phoneButtons.add(textButton);
-		
-		textButton = (Button)findViewById(R.id.diez);
-		textButton.setOnClickListener(buttonClickListener);
-		phoneButtons.add(textButton);
-		
-		ImageButton imageButton = (ImageButton)findViewById(R.id.backspace);
-		imageButton.setOnClickListener(buttonClickListener);
-		phoneButtons.add(imageButton);
-		
-		imageButton = (ImageButton)findViewById(R.id.call);
-		imageButton.setOnClickListener(buttonClickListener);
-		phoneButtons.add(imageButton);
-		
-		imageButton = (ImageButton)findViewById(R.id.hangup);
-		imageButton.setOnClickListener(buttonClickListener);
-		phoneButtons.add(imageButton);
+		ImageButton hangupButton = (ImageButton)findViewById(R.id.hangup);
+		hangupButton.setOnClickListener(handUpButtonClickListener);
 	}
 
 	@Override
